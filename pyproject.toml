@@ -1,0 +1,9 @@
+[tool.black]
+include = '\.pyi?$'
+extend-exclude = '''
+/(\.git|\.venv|venv|env|build|dist|doc|coverage)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests/pytest"]
+pythonpath = ["source"]
