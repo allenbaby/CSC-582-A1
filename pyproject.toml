@@ -7,3 +7,4 @@ extend-exclude = '''
 [tool.pytest.ini_options]
 testpaths = ["tests/pytest"]
 pythonpath = ["source"]
+addopts = "--import-mode=importlib"

@@ -1,0 +1,22 @@
+%% Incremental diagram: implemented production classes only.
+%% Extend with primitives and composition as those stages are implemented.
+classDiagram
+    class AbstractDevice {
+        <<abstract>>
+        update()* None
+    }
+    class AbstractGate {
+        <<abstract>>
+        in1 : int
+        in2 : int
+        out : int
+        __init__()
+        setIn1(value) None
+        setIn2(value) None
+        getIn1() int
+        getIn2() int
+        getOut() int
+        repr() str
+    }
+    AbstractDevice <|-- AbstractGate
+    note for AbstractGate "Both setters store the input, then call the inherited abstract update operation."
