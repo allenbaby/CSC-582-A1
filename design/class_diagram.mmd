@@ -19,4 +19,25 @@ classDiagram
         repr() str
     }
     AbstractDevice <|-- AbstractGate
+    class AND {
+        id : str
+        __init__(idNumber)
+        update() None
+        repr() str
+    }
+    class NAND {
+        id : str
+        __init__(idNumber)
+        update() None
+        repr() str
+    }
+    class OR {
+        id : str
+        __init__(idNumber)
+        update() None
+        repr() str
+    }
+    AbstractGate <|-- AND
+    AbstractGate <|-- NAND
+    AbstractGate <|-- OR
     note for AbstractGate "Both setters store the input, then call the inherited abstract update operation."
