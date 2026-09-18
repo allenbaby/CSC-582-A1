@@ -1,0 +1,82 @@
+sequenceDiagram
+    actor Caller
+    participant A as FourBitAdder
+    participant S as stages[i]:FullAdder
+    participant F0 as stages[0]:FullAdder
+    participant F1 as stages[1]:FullAdder
+    participant F2 as stages[2]:FullAdder
+    participant F3 as stages[3]:FullAdder
+    Note over Caller,F3: Full addition: A=15, B=0, Cin=1 gives Cout=1, Sum=0000.
+    Caller->>A: FourBitAdder()
+    Note over A,F3: Constructor creates four distinct stages and calls update with zero pins.
+    A-->>Caller: zero-initialized adder
+    Caller->>A: setA(15)
+    A->>A: a = [1,1,1,1], then update(), then carry = 0
+    loop i = 0 through 3, in order
+        A->>S: setA(1)
+        S->>S: update()
+        A->>S: setB(0)
+        S->>S: update()
+        A->>S: setCin(carry=0)
+        S->>S: update()
+        A->>S: getSum()
+        S-->>A: 1 (store in sum[i])
+        A->>S: getCout()
+        S-->>A: 0 (forward as carry)
+    end
+    A->>A: cout = carry
+    A-->>Caller: setA returns
+    Caller->>A: setB(0)
+    Note over A,S: Encodes b=[0,0,0,0] and repeats the same four-stage update, even though B is unchanged.
+    A-->>Caller: setB returns with Sum=15, Cout=0
+    Caller->>A: setCin(1)
+    activate A
+    A->>A: cin = 1, then update(), then carry = 1
+    A->>F0: setA(1)
+    F0->>F0: update()
+    A->>F0: setB(0)
+    F0->>F0: update()
+    A->>F0: setCin(1)
+    F0->>F0: update()
+    A->>F0: getSum()
+    F0-->>A: 0 (store sum[0])
+    A->>F0: getCout()
+    F0-->>A: 1 (carry to bit 1)
+    A->>F1: setA(1)
+    F1->>F1: update()
+    A->>F1: setB(0)
+    F1->>F1: update()
+    A->>F1: setCin(1)
+    F1->>F1: update()
+    A->>F1: getSum()
+    F1-->>A: 0 (store sum[1])
+    A->>F1: getCout()
+    F1-->>A: 1 (carry to bit 2)
+    A->>F2: setA(1)
+    F2->>F2: update()
+    A->>F2: setB(0)
+    F2->>F2: update()
+    A->>F2: setCin(1)
+    F2->>F2: update()
+    A->>F2: getSum()
+    F2-->>A: 0 (store sum[2])
+    A->>F2: getCout()
+    F2-->>A: 1 (carry to bit 3)
+    A->>F3: setA(1)
+    F3->>F3: update()
+    A->>F3: setB(0)
+    F3->>F3: update()
+    A->>F3: setCin(1)
+    F3->>F3: update()
+    A->>F3: getSum()
+    F3-->>A: 0 (store sum[3])
+    A->>F3: getCout()
+    F3-->>A: 1 (external carry)
+    A->>A: cout = carry
+    A-->>Caller: setCin returns
+    deactivate A
+    Note over F0,F3: Each update settles first half-adder, then second, then ORs their carries through carry_gate.
+    Caller->>A: getSum()
+    A-->>Caller: 0 (encoding sum pins 0000)
+    Caller->>A: getCout()
+    A-->>Caller: 1
