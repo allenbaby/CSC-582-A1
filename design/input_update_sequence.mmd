@@ -1,0 +1,48 @@
+sequenceDiagram
+    actor Caller
+    participant X as Xor2
+    participant NA as not_a:NAND
+    participant NB as not_b:NAND
+    participant AB as a_not_b:AND
+    participant BA as not_a_b:AND
+    participant O as combine:OR
+    Note over Caller,O: Existing Xor2 has A=0, B=1, out=1. Change only A to 1.
+    Caller->>X: setA(1)
+    activate X
+    X->>X: a = 1, then update()
+    X->>NA: setIn1(1)
+    NA->>NA: in1 = 1, then update()
+    X->>NA: setIn2(1)
+    NA->>NA: in2 = 1, then update() sets out=0
+    X->>NB: setIn1(1)
+    NB->>NB: in1 = 1, then update()
+    X->>NB: setIn2(1)
+    NB->>NB: in2 = 1, then update() sets out=0
+    X->>AB: setIn1(a=1)
+    AB->>AB: in1 = 1, then update()
+    X->>NB: getOut()
+    NB-->>X: 0
+    X->>AB: setIn2(0)
+    AB->>AB: in2 = 0, then update() sets out=0
+    X->>NA: getOut()
+    NA-->>X: 0
+    X->>BA: setIn1(0)
+    BA->>BA: in1 = 0, then update()
+    X->>BA: setIn2(b=1)
+    BA->>BA: in2 = 1, then update() sets out=0
+    X->>AB: getOut()
+    AB-->>X: 0
+    X->>O: setIn1(0)
+    O->>O: in1 = 0, then update()
+    X->>BA: getOut()
+    BA-->>X: 0
+    X->>O: setIn2(0)
+    O->>O: in2 = 0, then update() sets out=0
+    X->>O: getOut()
+    O-->>X: 0
+    X->>X: out = 0
+    X-->>Caller: setA returns after all outputs settle
+    deactivate X
+    Caller->>X: getOut()
+    X-->>Caller: 0
+    Note over X,O: Every primitive setter calls update, even for unchanged input values.
