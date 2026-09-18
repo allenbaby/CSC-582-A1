@@ -10,9 +10,15 @@ def test_construction_and_composition() -> None:
     gate = Xor2()
     assert isinstance(gate, AbstractDevice)
     assert (gate.getA(), gate.getB(), gate.getOut()) == (0, 0, 0)
-    parts = [value for value in vars(gate).values() if isinstance(value, AbstractDevice)]
+    parts = [
+        value for value in vars(gate).values() if isinstance(value, AbstractDevice)
+    ]
     assert sorted(type(part).__name__ for part in parts) == [
-        "AND", "AND", "NAND", "NAND", "OR"
+        "AND",
+        "AND",
+        "NAND",
+        "NAND",
+        "OR",
     ]
     assert len({id(part) for part in parts}) == 5
     assert isinstance(gate.not_a, NAND)
