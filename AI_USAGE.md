@@ -49,3 +49,11 @@ Use this format for each significant AI-assisted contribution.
 - **What I asked:** Continue the assignment with another small implementation stage.
 - **What the agent produced:** Inspected the current files and history and reread the relevant official starter pseudocode. Translated AbstractGate with the starter's pin and method names, inherited abstract update contract, and zero-initialized construction. Added contract tests using a recording subclass, plus an incremental Mermaid class diagram. The recording subclass is test-only and implements no Boolean logic. Ran Black on source and tests and the complete pytest suite.
 - **What I changed, rejected, or corrected:** No user changes, rejections, or corrections have been reported for this stage. The agent limited this stage to AbstractGate; primitives, generated documentation, and composite circuits remain unfinished.
+
+## README wording revision
+
+- **Date:** 2026-09-18
+- **AI tool:** OpenAI Codex
+- **What I asked:** Remove assistant-style narration and make the README read as standard project documentation.
+- **What the agent produced:** Rewrote README.md with direct setup, usage, architecture, testing, documentation, and submission instructions. Retained the implementation details, assignment layout deviations, and reference to the AI disclosure log.
+- **What I changed, rejected, or corrected:** I requested a change in writing style. No subsequent user edits or review have been reported.

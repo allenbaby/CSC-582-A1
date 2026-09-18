@@ -1,12 +1,12 @@
 # CSC 582 Assignment #1: Four-Bit Adder
 
-This project implements an object-oriented four-bit adder in Python using the
-required assignment structure. Its circuit is composed exclusively from AND, OR,
-and NAND primitive objects.
+A four-bit binary adder implemented in Python using object composition. The
+circuit uses AND, OR, and NAND primitives to build XOR gates, half-adders,
+full-adders, and a four-stage ripple-carry adder.
 
-## Python Version and Setup
+## Setup
 
-Use Python 3. Create and activate a virtual environment, then install the development tools:
+Run these commands from the project root:
 
 ```bash
 python3 -m venv .venv
@@ -14,45 +14,13 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-## Development Commands
+## Usage
 
-Format the source and test directories with Black:
-
-```bash
-black source tests
-```
-
-Run the pytest suite:
+Start a Python session with the source directory on the import path:
 
 ```bash
-pytest
+PYTHONPATH=source .venv/bin/python
 ```
-
-Generate documentation for the FourBitAdder package:
-
-```bash
-PYTHONPATH=source pdoc -o doc FourBitAdder
-```
-
-Open `doc/index.html` to browse the generated documentation. Keep the generated
-files under `doc/` in Git as required by the assignment.
-
-## Current Implementation
-
-The primitive foundation implements `AbstractDevice`, `AbstractGate`, `AND`,
-`OR`, and `NAND`. All concrete gates require an integer `idNumber` when created.
-Their input setters call `update()` before returning. Per the provided
-construction tests, every gate starts with all pins at zero: a new NAND's output
-becomes one when either zero input is set, not during construction.
-
-`Xor2` contains two NANDs used as NOTs, two ANDs, and one OR. `HalfAdder` contains
-one XOR and one AND. `FullAdder` contains two half-adders and one OR. The four-bit
-adder contains four full-adders, with each carry-out feeding the next carry-in.
-All composites inherit directly from `AbstractDevice`.
-
-## Try the Public Adder
-
-From the project root, start Python with `PYTHONPATH=source .venv/bin/python`, then:
 
 ```python
 from FourBitAdder.FourBitAdder import FourBitAdder
@@ -64,93 +32,150 @@ adder.setCin(1)
 print(adder.getSum(), adder.getCout())  # 0 1: binary result 10000
 ```
 
-`setA` and `setB` take integers from 0 through 15; `setCin` takes 0 or 1.
-`getSum` returns the lower four result bits as an integer, and `getCout` returns
-the fifth bit. Each setter completes the entire update before returning.
-The caller must supply inputs in these ranges; invalid-input handling is not
-specified by the starter and is not added here.
+- `setA(value)` and `setB(value)` accept integers from 0 through 15.
+- `setCin(value)` accepts a carry-in bit of 0 or 1.
+- `getSum()` returns the lower four result bits as an integer.
+- `getCout()` returns the carry-out bit.
 
-For a single gate, import `AND` from `FourBitAdder.intern.LogicGates`, construct
-`AND(1)`, and call `setIn1` and `setIn2` with one bit each. The constructor number
-is a debugging ID, not an input or a bit position.
+Each input setter recomputes the outputs before returning. Inputs must be within
+these ranges; input validation is not implemented.
 
-## Python Translation Decisions
+Individual gates accept one bit per input through `setIn1` and `setIn2`.
+For example, `AND(1)` creates an AND gate with debugging ID `1AND`. The ID does
+not specify an input value or bit position.
 
-The required `source/` directory and CamelCase filenames and method names are
-preserved from the starter instead of adopting Python's usual naming conventions.
-`pytest` adds `source/` to its import path through `pyproject.toml`; documentation
-generation uses `PYTHONPATH=source` for the same package imports. The workspace's
-Pylance settings configure editor import resolution separately.
+## Architecture
 
-`ABC` and `abstractmethod` require concrete subclasses to implement `update()`.
-The gate setters enforce when it is called. Python has no enforced protected
-visibility, so the starter's `in1`, `in2`, `out`, `id`, and `repr()` names are
-preserved and intended for internal use. No no-op destructor is needed in Python.
-Inputs are bits (integers 0 or 1); the starter specifies no invalid-input policy.
+| Class | Responsibility |
+| --- | --- |
+| `AbstractDevice` | Declares the abstract `update()` contract. |
+| `AbstractGate` | Stores two inputs and one output; input setters call `update()`. |
+| `AND`, `OR`, `NAND` | Implement the primitive Boolean operations. |
+| `Xor2` | Contains two NAND inverters, two AND gates, and one OR gate. |
+| `HalfAdder` | Contains one XOR for sum and one AND for carry. |
+| `FullAdder` | Contains two half-adders and one OR to combine their carries. |
+| `FourBitAdder` | Contains four full-adders connected in ripple-carry order. |
 
-Primitive and XOR tests use fixed truth tables and loops. Adder tests use
-independent integer addition for expectations, as the starter specifies;
-production composites never calculate a sum arithmetically. Black, pytest, and
-pdoc are project tool choices, not tools specifically mandated by the professor.
+The primitives inherit from `AbstractGate`. All composites inherit directly from
+`AbstractDevice`. Each composite passes inputs through its components in
+dependency order and reads their outputs. Only the three primitive `update()`
+methods implement Boolean operations.
 
-The starter leaves the smaller composites' exact accessor names open. This
-translation uses `setA`, `setB`, `getA`, and `getB`; XOR has `getOut`, half-adder
-has `getSum` and `getCarry`, and full-adder adds `setCin`, `getCin`, and `getCout`.
-The four-bit methods preserve the provided test contract. Its bit lists store
-bit zero first; binary string conversions only encode and decode pins, while
-full-adder objects compute the outputs. The public module re-exports the internal
-class, avoiding a duplicate wrapper class.
+All primitive pins start at zero, matching the starter construction contract.
+A new NAND's output becomes one after either zero-valued input is set.
+Composite constructors call `update()` to settle their internal components.
+During an update, internal outputs may change several times; the public outputs
+are settled when the setter returns.
 
-The base declares the shared update contract; each concrete setter enforces it
-by storing its input and calling `self.update()`. Each composite's update wires
-its particular components in dependency order. No generic event scheduler is
-needed for this synchronous circuit. Intermediate internal outputs can change
-several times during an update; outputs are settled when the public setter
-returns. Composite constructors call update to settle their internal NANDs.
+The four-bit adder stores its bit lists least-significant-bit first. Binary
+string conversions encode and decode pin values; full-adder objects perform the
+addition. The public module re-exports the implementation from `intern/`.
 
-## Tests and Design
+## Project Layout and Python Conventions
 
-Run `.venv/bin/python -m pytest -v` from the project root. There are 29 test
-cases, with loops inside the exhaustive tests. The four-bit suite covers all
-16 × 16 × 2 = 512 additions, independent setter changes, carry propagation
-through every stage, and independent adder instances. Lower-level tests cover
-construction, truth tables, required component ownership, and update dispatch.
+- `source/FourBitAdder/FourBitAdder.py`: public entry point.
+- `source/FourBitAdder/intern/`: implementation classes.
+- `tests/pytest/`: automated tests.
+- `design/`: plain-text Mermaid diagrams.
+- `doc/`: generated API documentation.
+- `AI_USAGE.md`: AI assistance disclosure.
 
-The plain-text Mermaid diagrams are:
+The project preserves the assignment's `source/` layout and the starter's
+CamelCase filenames and method names instead of Python's usual naming
+conventions. `pytest` configures its import path through `pyproject.toml`;
+manual sessions and documentation generation use `PYTHONPATH=source`.
+Pylance uses the workspace settings for editor import resolution.
+
+`ABC` and `abstractmethod` require concrete devices to implement `update()`;
+the input setters enforce when it runs. Python does not enforce protected
+visibility. Pin fields and component objects are intended for internal use;
+callers should use setters and getters. No no-op destructor is needed.
+
+The smaller composites use `setA`, `setB`, `getA`, and `getB`. XOR exposes
+`getOut`; the half-adder exposes `getSum` and `getCarry`; the full-adder also
+provides `setCin`, `getCin`, and `getCout`. These names are Python implementation
+choices where the starter leaves the API open. The four-bit adder preserves
+the provided test contract.
+
+## Tests and Formatting
+
+Run the complete test suite:
+
+```bash
+pytest -v
+```
+
+Tests cover construction, truth tables, component ownership, and immediate
+updates after input changes. The four-bit suite checks all 512 combinations
+of two four-bit operands and carry-in, carry propagation, and instance isolation.
+Primitive and XOR expectations use fixed truth tables. Adder expectations use
+independent integer addition in tests.
+
+Format all source and test files before committing:
+
+```bash
+black source tests
+```
+
+Black, pytest, and pdoc are the selected Python development tools.
+
+## Documentation and Diagrams
+
+Generate the API documentation:
+
+```bash
+PYTHONPATH=source pdoc -o doc FourBitAdder
+```
+
+Open it on macOS:
+
+```bash
+open doc/index.html
+```
+
+Commit the generated files under `doc/`. Regenerate them after changing code or
+docstrings.
+
+The Mermaid diagrams describe the implementation:
 
 - `design/class_diagram.mmd`: all nine production classes, inheritance, and
-  component names and multiplicities.
-- `design/input_update_sequence.mmd`: a single XOR input change down through
-  primitive setter/update calls.
-- `design/addition_sequence.mmd`: setting operands and propagating carry for
-  15 + 0 + 1, from bit zero to bit three.
+  composition relationships with component names and multiplicities.
+- `design/input_update_sequence.mmd`: an XOR input change and the resulting
+  primitive setter and update calls.
+- `design/addition_sequence.mmd`: a complete 15 + 0 + 1 addition, including carry
+  propagation from bit zero through bit three.
 
-The sequence diagrams were explicitly authored from the implementation with
-disclosed AI assistance; they were not generated by pdoc. Keep the `.mmd` files
-in the submission, even if also viewing or exporting rendered diagrams.
-
-To explain the design in class, trace `setCin(1)` from the public adder: the
-four-bit update visits each full-adder; each full-adder settles two half-adders
-and a carry OR; each half-adder settles an XOR and a carry AND; each XOR wires
-five primitives. Only primitive update methods apply Boolean operations.
+Keep the `.mmd` sources in the submission alongside any rendered exports.
+AI assistance with code and documentation is recorded in `AI_USAGE.md`.
 
 ## Submission
 
-Run Black in default mode (`black source tests`) before each commit, run the
-tests, and regenerate documentation after code/docstring changes. Commit the
-generated `doc/` files along with source, tests, diagrams, and the current
-`AI_USAGE.md`. The assignment requires at least 15 meaningful commits across
-at least four distinct days; do not fabricate, backdate, or pad the history.
+The assignment requires at least 15 meaningful commits across four distinct
+days, formatting before each commit, generated documentation, and a current
+AI disclosure log.
 
-Run `shasum -a 256 munger.py`. The official digest is
-`5aaae171f2ee60b3e65243858cfddf727db996bb21077604eddefd9dda93a3e6`.
-Never modify the bundler, including with a formatter.
+Verify the official bundler before use:
 
-From the repository root, run `python3 munger.py`, enter your actual student ID
-and name, and choose `1` for take-home. Inspect the resulting
-`<ID>_<Name>_takehome_bundle.txt`: check the history, source files, diagrams, and
-`FILES NOT BUNDLED` section. Generated documentation is counted in the tree
-rather than embedded; hidden editor settings are intentionally excluded.
-Upload through the take-home form provided by the professor. The in-class bundle
-uses option `2` and a separate form. A rehearsal with placeholder identity is
-only a bundler check and must not be submitted.
+```bash
+shasum -a 256 munger.py
+```
+
+Expected SHA-256:
+
+```text
+5aaae171f2ee60b3e65243858cfddf727db996bb21077604eddefd9dda93a3e6
+```
+
+Keep `munger.py` unmodified and exclude it from formatting commands.
+
+Generate the submission from the repository root:
+
+```bash
+python3 munger.py
+```
+
+Enter the student ID and name, then select `1` for the take-home bundle or `2`
+for the in-class bundle. Inspect the generated file's history, source contents,
+diagrams, and `FILES NOT BUNDLED` section before uploading to the corresponding
+submission form. Generated documentation is counted in the tree rather than
+embedded in the bundle. Hidden editor settings are excluded.
