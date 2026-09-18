@@ -1,5 +1,4 @@
-%% Incremental diagram: implemented production classes only.
-%% Extend with primitives and composition as those stages are implemented.
+%% Production classes. The public module re-exports the internal FourBitAdder.
 classDiagram
     class AbstractDevice {
         <<abstract>>
@@ -40,4 +39,77 @@ classDiagram
     AbstractGate <|-- AND
     AbstractGate <|-- NAND
     AbstractGate <|-- OR
+    class Xor2 {
+        a : int
+        b : int
+        out : int
+        __init__()
+        setA(value) None
+        setB(value) None
+        getA() int
+        getB() int
+        getOut() int
+        update() None
+    }
+    class HalfAdder {
+        a : int
+        b : int
+        sum : int
+        carry : int
+        __init__()
+        setA(value) None
+        setB(value) None
+        getA() int
+        getB() int
+        getSum() int
+        getCarry() int
+        update() None
+    }
+    class FullAdder {
+        a : int
+        b : int
+        cin : int
+        sum : int
+        cout : int
+        __init__()
+        setA(value) None
+        setB(value) None
+        setCin(value) None
+        getA() int
+        getB() int
+        getCin() int
+        getSum() int
+        getCout() int
+        update() None
+    }
+    class FourBitAdder {
+        a : list~int~
+        b : list~int~
+        cin : int
+        sum : list~int~
+        cout : int
+        __init__()
+        setA(value) None
+        setB(value) None
+        setCin(value) None
+        getA() int
+        getB() int
+        getCin() int
+        getSum() int
+        getCout() int
+        update() None
+    }
+    AbstractDevice <|-- Xor2
+    AbstractDevice <|-- HalfAdder
+    AbstractDevice <|-- FullAdder
+    AbstractDevice <|-- FourBitAdder
+    Xor2 "1" *-- "2" NAND : not_a, not_b
+    Xor2 "1" *-- "2" AND : a_not_b, not_a_b
+    Xor2 "1" *-- "1" OR : combine
+    HalfAdder "1" *-- "1" Xor2 : xor
+    HalfAdder "1" *-- "1" AND : carry_gate
+    FullAdder "1" *-- "2" HalfAdder : first, second
+    FullAdder "1" *-- "1" OR : carry_gate
+    FourBitAdder "1" *-- "4" FullAdder : stages
     note for AbstractGate "Both setters store the input, then call the inherited abstract update operation."
+    note for FourBitAdder "Pin lists are least-significant-bit first. Integer conversion only encodes pins. Each setter settles stages in order 0 to 3."
