@@ -16,7 +16,9 @@ def test_construction_and_composition() -> None:
     assert isinstance(adder.second, HalfAdder)
     assert adder.first is not adder.second
     assert isinstance(adder.carry_gate, OR)
-    parts = [value for value in vars(adder).values() if isinstance(value, AbstractDevice)]
+    parts = [
+        value for value in vars(adder).values() if isinstance(value, AbstractDevice)
+    ]
     assert len(parts) == 3
 
 
@@ -27,7 +29,9 @@ def test_complete_truth_table_and_each_setter() -> None:
         for b in (0, 1, 0):
             for cin in (0, 1, 0):
                 for setter, value in (
-                    (adder.setA, a), (adder.setB, b), (adder.setCin, cin)
+                    (adder.setA, a),
+                    (adder.setB, b),
+                    (adder.setCin, cin),
                 ):
                     setter(value)
                     expected = adder.getA() + adder.getB() + adder.getCin()

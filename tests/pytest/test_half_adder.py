@@ -10,10 +10,17 @@ def test_construction_and_composition() -> None:
     """A zero-initialized half-adder owns one XOR and one AND."""
     adder = HalfAdder()
     assert isinstance(adder, AbstractDevice)
-    assert (adder.getA(), adder.getB(), adder.getSum(), adder.getCarry()) == (0, 0, 0, 0)
+    assert (adder.getA(), adder.getB(), adder.getSum(), adder.getCarry()) == (
+        0,
+        0,
+        0,
+        0,
+    )
     assert isinstance(adder.xor, Xor2)
     assert isinstance(adder.carry_gate, AND)
-    parts = [value for value in vars(adder).values() if isinstance(value, AbstractDevice)]
+    parts = [
+        value for value in vars(adder).values() if isinstance(value, AbstractDevice)
+    ]
     assert len(parts) == 2
 
 
