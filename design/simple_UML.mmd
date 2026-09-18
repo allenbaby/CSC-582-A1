@@ -1,42 +1,31 @@
 classDiagram
 
-class AbstractDevice {
-  <<abstract>>
-  +update()
-}
-
-class AbstractGate {
-  <<abstract>>
-  +update()
-}
-
-AbstractDevice <|-- AbstractGate
-
+class AbstractDevice
+class AbstractGate
 class NAND
 class AND
 class OR
+class Xor2
+class HalfAdder
+class FullAdder
+class FourBitAdder
+
+AbstractDevice <|-- AbstractGate
 
 AbstractGate <|-- NAND
 AbstractGate <|-- AND
 AbstractGate <|-- OR
 
-class XOR
-AbstractDevice <|-- XOR
-
-class HalfAdder
+AbstractDevice <|-- Xor2
 AbstractDevice <|-- HalfAdder
-
-class FullAdder
 AbstractDevice <|-- FullAdder
-
-class FourBitAdder
 AbstractDevice <|-- FourBitAdder
 
-XOR *-- NAND : uses
-XOR *-- AND : uses
-XOR *-- OR : uses
+Xor2 *-- NAND : 2
+Xor2 *-- AND : 2
+Xor2 *-- OR : 1
 
-HalfAdder *-- XOR : 1
+HalfAdder *-- Xor2 : 1
 HalfAdder *-- AND : 1
 
 FullAdder *-- HalfAdder : 2
